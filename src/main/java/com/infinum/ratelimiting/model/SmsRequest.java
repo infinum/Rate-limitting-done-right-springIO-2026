@@ -1,4 +1,4 @@
 package com.infinum.ratelimiting.model;
 
-public record SmsRequest(String phoneNumber, String body) {
+public record SmsRequest(String phone, String message) {
 }

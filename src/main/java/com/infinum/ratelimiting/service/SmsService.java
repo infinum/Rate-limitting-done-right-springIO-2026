@@ -9,7 +9,7 @@ public class SmsService {
 
     private static final Logger log = LoggerFactory.getLogger(SmsService.class);
 
-    public void send(String phoneNumber, String body) {
-        log.info("SMS sent to {} with body {}", phoneNumber, body);
+    public void send(String phone, String message) {
+        log.info("SMS sent to {} with message {}", phone, message);
     }
 }
