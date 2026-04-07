@@ -22,7 +22,7 @@ class SmsController {
     @PostMapping("/send")
     ResponseEntity<String> sendOtp(
             @RequestBody SmsRequest request) {
-        smsService.send(request.phoneNumber(), request.body());
+        smsService.send(request.phone(), request.message());
         return ResponseEntity.noContent().build();
     }
 }
