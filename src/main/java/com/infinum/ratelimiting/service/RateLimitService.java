@@ -17,17 +17,30 @@ public class RateLimitService {
 
     private final ProxyManager<String> proxyManager;
 
-    public RateLimitService(ProxyManager<String> proxyManager) {
+    private final SystemHealthService systemHealthService;
+
+    public RateLimitService(ProxyManager<String> proxyManager, SystemHealthService systemHealthService) {
         this.proxyManager = proxyManager;
+        this.systemHealthService = systemHealthService;
     }
 
-    public ConsumptionProbe tryConsumeAndReturnRemaining(String tenantId) {
-        Bucket bucket = resolveBucket(tenantId);
-        return bucket.tryConsumeAndReturnRemaining(1);
-    }
-
-    private Bucket resolveBucket(String tenantId) {
+    public RateLimitResult tryConsume(String tenantId) {
         Tier tier = TENANT_TIERS.getOrDefault(tenantId, Tier.STANDARD);
-        return proxyManager.getProxy(tenantId, tier.bucketConfiguration());
+        Bucket primary = proxyManager.getProxy(tenantId, tier.primaryConfig());
+        ConsumptionProbe probe = primary.tryConsumeAndReturnRemaining(1);
+
+        if (probe.isConsumed()) {
+            return new RateLimitResult(probe, false);
+        }
+
+        if (systemHealthService.isHealthy()) {
+            Bucket burst = proxyManager.getProxy(tier.burstPoolKey(tenantId), tier.burstConfig());
+            ConsumptionProbe burstProbe = burst.tryConsumeAndReturnRemaining(1);
+            if (burstProbe.isConsumed()) {
+                return new RateLimitResult(burstProbe, true);
+            }
+        }
+
+        return new RateLimitResult(probe, false);
     }
 }
