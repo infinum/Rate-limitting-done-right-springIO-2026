@@ -24,6 +24,7 @@ public class RateLimitService {
         return proxyManager.getProxy(
                 tenantId, () -> BucketConfiguration.builder()
                         .addLimit(limit -> limit.capacity(10).refillGreedy(10, Duration.ofSeconds(1)))
+                        .addLimit(limit -> limit.capacity(100).refillIntervally(100, Duration.ofHours(1)))
                         .build());
     }
 }
