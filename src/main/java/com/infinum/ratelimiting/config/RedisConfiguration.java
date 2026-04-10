@@ -8,6 +8,9 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.codec.ByteArrayCodec;
 import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.StringCodec;
+import io.lettuce.core.resource.ClientResources;
+import io.lettuce.core.resource.DefaultClientResources;
+import io.lettuce.core.resource.Delay;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +22,11 @@ class RedisConfiguration {
     public RedisClient redisClient(
             @Value("${spring.data.redis.host:localhost}") String host,
             @Value("${spring.data.redis.port:6379}") int port) {
-        return RedisClient.create(RedisURI.builder()
+        ClientResources resources = DefaultClientResources.builder()
+                .reconnectDelay(Delay.constant(Duration.ofSeconds(5)))
+                .build();
+
+        return RedisClient.create(resources, RedisURI.builder()
                 .withHost(host)
                 .withPort(port)
                 .withTimeout(Duration.ofSeconds(1))

@@ -7,7 +7,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import io.github.bucket4j.ConsumptionProbe;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.infinum.ratelimiting.service.RateLimitService;
@@ -22,13 +21,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String tenantId = request.getHeader("X-Tenant-Id");
-        ConsumptionProbe probe = rateLimitService.tryConsumeAndReturnRemaining(tenantId);
-        if (probe.isConsumed()) {
-            response.addHeader("X-Rate-Limit-Remaining", String.valueOf(probe.getRemainingTokens()));
+        RateLimitService.Result result = rateLimitService.tryConsumeAndReturnRemaining(tenantId);
+        if (result.probe().isConsumed()) {
+            response.addHeader("X-Rate-Limit-Remaining", String.valueOf(result.probe().getRemainingTokens()));
+            response.addHeader("X-Rate-Limit-Source", result.source());
             filterChain.doFilter(request, response);
         } else {
             response.setStatus(429);
-            response.setHeader("Retry-After", String.valueOf(probe.getNanosToWaitForRefill() / 1_000_000_000));
+            response.setHeader("Retry-After", String.valueOf(result.probe().getNanosToWaitForRefill() / 1_000_000_000));
+            response.setHeader("X-Rate-Limit-Source", result.source());
             response.setContentType("text/plain");
             response.getWriter().append("Too Many Requests");
         }
