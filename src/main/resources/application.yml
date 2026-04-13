@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: ratelimiting
+
+rate-limiting:
+  tenants:
+    spring-shop: STANDARD
+    spring-bank: PREMIUM
+  tiers:
+    STANDARD:
+      limits:
+        - capacity: 10
+          refill-tokens: 10
+          refill-duration: 10s
+        - capacity: 1000
+          refill-tokens: 1000
+          refill-duration: 1h
+    PREMIUM:
+      limits:
+        - capacity: 100
+          refill-tokens: 100
+          refill-duration: 10s
+        - capacity: 10000
+          refill-tokens: 10000
+          refill-duration: 1h
