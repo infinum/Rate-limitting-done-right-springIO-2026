@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.infinum.ratelimiting.service.RateLimitResult;
 import com.infinum.ratelimiting.service.RateLimitService;
+import com.infinum.ratelimiting.service.RateLimitSource;
 
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -29,8 +30,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if (result.isConsumed()) {
             ConsumptionProbe probe = result.probe();
             response.addHeader("X-Rate-Limit-Remaining", String.valueOf(probe.getRemainingTokens()));
-            response.addHeader("X-Rate-Limit-Source", result.fromBurst() ? "burst" : "primary");
-            filterChain.doFilter(request, response);
+            response.addHeader("X-Rate-Limit-Source", result.source().name().toLowerCase());
+            try {
+                filterChain.doFilter(request, response);
+            } finally {
+                if (result.source() == RateLimitSource.COMMUNITY) {
+                    rateLimitService.returnCommunityTokens(1);
+                }
+            }
         } else {
             ConsumptionProbe probe = result.probe();
             response.setStatus(429);

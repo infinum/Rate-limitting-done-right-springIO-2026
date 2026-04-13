@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: ratelimiting
+
+rate-limiting:
+  community-pool:
+    capacity: 50
+    refill-tokens: 50
+    refill-duration: 60s
+  tenants:
+    spring-shop:
+      primary:
+        capacity: 10
+        refill-tokens: 10
+        refill-duration: 10s
+    spring-bank:
+      primary:
+        capacity: 100
+        refill-tokens: 100
+        refill-duration: 10s

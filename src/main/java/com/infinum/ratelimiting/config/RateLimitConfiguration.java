@@ -1,5 +1,6 @@
 package com.infinum.ratelimiting.config;
 
+import java.time.Clock;
 import java.time.Duration;
 
 import io.github.bucket4j.distributed.ExpirationAfterWriteStrategy;
@@ -12,7 +13,10 @@ import org.springframework.context.annotation.Configuration;
 
 import com.infinum.ratelimiting.service.RateLimitService;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(RateLimitProperties.class)
 class RateLimitConfiguration {
 
     @Bean
@@ -21,6 +25,11 @@ class RateLimitConfiguration {
         registrationBean.setFilter(new RateLimitFilter(rateLimitService));
         registrationBean.addUrlPatterns("/api/*");
         return registrationBean;
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();
     }
 
     @Bean
