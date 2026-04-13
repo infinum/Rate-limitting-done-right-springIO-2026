@@ -59,10 +59,10 @@ public class RateLimitService {
 
     private BucketConfig resolvePrimaryConfig(String tenantId) {
         RateLimitProperties.TenantConfig tenant = properties.tenants().get(tenantId);
-        if (tenant != null) {
-            return tenant.primary();
+        if (tenant == null) {
+            throw new IllegalArgumentException("No configuration found for tenant: " + tenantId);
         }
-        return properties.tenants().values().iterator().next().primary();
+        return tenant.primary();
     }
 
     private BucketConfiguration toBucketConfiguration(BucketConfig config) {
