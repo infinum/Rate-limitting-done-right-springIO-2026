@@ -49,7 +49,10 @@ public class RateLimitService {
 
     private Bucket resolveBucket(String tenantId) {
         String tierName = tenantTiers.getOrDefault(tenantId, DEFAULT_TIER);
-        Tier tier = tiers.getOrDefault(tierName, tiers.get(DEFAULT_TIER));
+        Tier tier = tiers.get(tierName);
+        if (tier == null) {
+            throw new IllegalArgumentException("No tier configuration found for tier: " + tierName);
+        }
         return proxyManager.getProxy(tenantId, tier.bucketConfiguration());
     }
 }
