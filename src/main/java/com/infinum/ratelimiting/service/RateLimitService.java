@@ -26,7 +26,7 @@ public class RateLimitService {
     }
 
     private Bucket resolveBucket(String tenantId) {
-        String tierName = properties.tenants().getOrDefault(tenantId, DEFAULT_TIER);
+        String tierName = properties.tenants().get(tenantId);
         TierProperties tier = resolveTier(tierName);
         return proxyManager.getProxy(tenantId, tier::toBucketConfiguration);
     }
